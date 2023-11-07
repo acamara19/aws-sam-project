@@ -29,3 +29,14 @@ warm_containers = "EAGER"
 
 [default.local_start_lambda.parameters]
 warm_containers = "EAGER"
+
+[dev.deploy.parameters]
+stack_name = "acamara-serverless"
+resolve_s3 = true
+s3_prefix = "acamara-serverless"
+region = "us-east-1"
+profile = "acamara-admin"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
+disable_rollback = true
