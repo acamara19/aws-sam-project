@@ -369,6 +369,7 @@ Resources:
   CodePipelineExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: CodePipelineExecutionRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -463,6 +464,7 @@ Resources:
   PipelineStackCloudFormationExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: PipelineStackCloudFormationExecutionRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -487,6 +489,7 @@ Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: CodeBuildServiceRole
       Tags:
         - Key: Role
           Value: aws-sam-pipeline-codebuild-service-role
