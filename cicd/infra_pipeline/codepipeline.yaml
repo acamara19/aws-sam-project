@@ -581,7 +581,7 @@ Resources:
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
-        BuildSpec: pipeline/buildspec_feature.yml
+        BuildSpec: cicd/infra_pipeline/pipeline/buildspec_feature.yml
 
   CodeBuildProjectBuildAndPackage:
     Condition: IsMainBranchPipeline
@@ -647,7 +647,7 @@ Resources:
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
-        BuildSpec: pipeline/buildspec_deploy.yml
+        BuildSpec: cicd/infra_pipeline/pipeline/buildspec_deploy.yml
 Outputs:
   CodeStarConnectionArn:
     Condition: CreateConnection
