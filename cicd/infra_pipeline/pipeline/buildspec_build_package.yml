@@ -24,6 +24,5 @@ artifacts:
   files:
     - packaged-test.yaml
     - packaged-prod.yaml
-    - assume-role.sh
-    - pipeline/*
-    - cicd/infra_pipeline/codepipeline.yaml
+    - ../assume-role.sh
+    - ../pipeline/*
