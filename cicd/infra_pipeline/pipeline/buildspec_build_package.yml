@@ -15,7 +15,7 @@ phases:
       - sudo rm /var/run/docker.pid
       - sam build --use-container --template ${SAM_TEMPLATE}
       - . ./cicd/infra_pipeline/assume-role.sh ${TESTING_PIPELINE_EXECUTION_ROLE} test-package
-      - cd /cicd/infra_pipeline/ sam package --s3-bucket ${TESTING_ARTIFACT_BUCKET}
+      - sam package --s3-bucket ${TESTING_ARTIFACT_BUCKET}
                     --region ${TESTING_REGION}
                     --output-template-file packaged-test.yaml
       - . ./cicd/infra_pipeline/assume-role.sh ${PROD_PIPELINE_EXECUTION_ROLE} prod-package
