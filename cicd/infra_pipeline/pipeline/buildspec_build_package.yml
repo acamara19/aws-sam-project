@@ -24,8 +24,7 @@ phases:
                     --output-template-file packaged-prod.yaml
 artifacts:
   files:
-    - echo "Package Test path ${package-test}"
-    - packaged-test.yaml
-    - packaged-prod.yaml
+    - cicd/infra_pipeline/packaged-test.yaml
+    - cicd/infra_pipeline/packaged-prod.yaml
     - cicd/infra_pipeline/assume-role.sh
     - cicd/infra_pipeline/pipeline/*
