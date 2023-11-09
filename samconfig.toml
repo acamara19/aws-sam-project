@@ -16,10 +16,10 @@ lint = true
 [default.deploy.parameters]
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
-resolve_s3 = true
+resolve_s3 = false
 
 [default.package.parameters]
-resolve_s3 = true
+resolve_s3 = false
 
 [default.sync.parameters]
 watch = true
@@ -32,7 +32,7 @@ warm_containers = "EAGER"
 
 [dev.deploy.parameters]
 stack_name = "acamara-serverless"
-resolve_s3 = true
+resolve_s3 = false
 s3_prefix = "acamara-serverless"
 region = "us-east-1"
 profile = "acamara-admin"
