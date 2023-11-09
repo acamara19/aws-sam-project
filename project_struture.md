@@ -14,6 +14,14 @@ aws-sam-project
 ├── cicd
 │   ├── app_pipeline
 │   └── infra_pipeline
+│       ├── assume-role.sh
+│       ├── codepipeline.yaml
+│       └── pipeline
+│           ├── buildspec_build_package.yml
+│           ├── buildspec_deploy.yml
+│           ├── buildspec_feature.yml
+│           ├── buildspec_integration_test.yml
+│           └── buildspec_unit_test.yml
 ├── events
 │   └── event.json
 ├── hello_world
@@ -23,10 +31,10 @@ aws-sam-project
 ├── project_struture.md
 ├── samconfig.toml
 ├── temp
-│   └── codepipeline.yaml
 ├── template.yaml
 └── tests
     ├── __init__.py
+    ├── codepipeline.yaml
     ├── integration
     │   ├── __init__.py
     │   └── test_api_gateway.py
@@ -35,4 +43,4 @@ aws-sam-project
         ├── __init__.py
         └── test_handler.py
 
-16 directories, 20 files
+17 directories, 27 files
