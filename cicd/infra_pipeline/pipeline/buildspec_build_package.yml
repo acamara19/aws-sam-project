@@ -6,6 +6,7 @@ phases:
     commands:
       - pip install --upgrade pip
       - pip install --upgrade awscli aws-sam-cli
+      - pip install --upgrade pyOpenSSL
       # Enable docker https://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker-custom-image.html
       - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
       - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
@@ -14,7 +15,7 @@ phases:
       - echo "SAM Template path ${SAM_TEMPLATE}"
       - sudo rm /var/run/docker.pid
       - sam build --use-container --template ${SAM_TEMPLATE}
-      - . ./assume-role.sh ${TESTING_PIPELINE_EXECUTION_ROLE} test-package
+      - . ./assume-role.sh" ${TESTING_PIPELINE_EXECUTION_ROLE} test-package
       - sam package --s3-bucket ${TESTING_ARTIFACT_BUCKET}
                     --region ${TESTING_REGION}
                     --output-template-file packaged-test.yaml
@@ -24,7 +25,7 @@ phases:
                     --output-template-file packaged-prod.yaml
 artifacts:
   files:
-    - cicd/infra_pipeline/packaged-test.yaml
-    - cicd/infra_pipeline/packaged-prod.yaml
+    - packaged-test.yaml
+    - packaged-prod.yaml
     - cicd/infra_pipeline/assume-role.sh
     - cicd/infra_pipeline/pipeline/*
