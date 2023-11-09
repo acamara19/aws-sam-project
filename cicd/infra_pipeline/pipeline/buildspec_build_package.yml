@@ -12,6 +12,7 @@ phases:
   build:
     commands:
       - echo "SAM Template path ${SAM_TEMPLATE}"
+      - sudo rm /var/run/docker.pid
       - sam build --use-container --template ${SAM_TEMPLATE}
       - . ./assume-role.sh ${TESTING_PIPELINE_EXECUTION_ROLE} test-package
       - sam package --s3-bucket ${TESTING_ARTIFACT_BUCKET}
