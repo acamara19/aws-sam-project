@@ -1,6 +1,4 @@
-# aws-sam-project
-
-```Project_Structure
+aws-sam-project
 ├── README.md
 ├── __init__.py
 ├── aws_resources
@@ -14,14 +12,8 @@
 │       │   └── requirement.txt
 │       └── template.yaml
 ├── cicd
-│   ├── assume-role.sh
-│   ├── codepipeline.yaml
-│   └── pipeline
-│       ├── buildspec_build_package.yml
-│       ├── buildspec_deploy.yml
-│       ├── buildspec_feature.yml
-│       ├── buildspec_integration_test.yml
-│       └── buildspec_unit_test.yml
+│   ├── app_pipeline
+│   └── infra_pipeline
 ├── events
 │   └── event.json
 ├── hello_world
@@ -30,6 +22,8 @@
 │   └── requirements.txt
 ├── project_struture.md
 ├── samconfig.toml
+├── temp
+│   └── codepipeline.yaml
 ├── template.yaml
 └── tests
     ├── __init__.py
@@ -41,5 +35,4 @@
         ├── __init__.py
         └── test_handler.py
 
-14 directories, 26 files
-```
+16 directories, 20 files
