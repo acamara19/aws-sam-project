@@ -273,6 +273,8 @@ Resources:
                  Owner: AWS
                  Provider: Manual
                  Version: "1"
+                Configuration:
+                  NotificationArn: !Ref ApprovalNotificationTopic
                 RunOrder: 1
               - Name: DeployProd
                 ActionTypeId:
@@ -296,6 +298,13 @@ Resources:
                 InputArtifacts:
                   - Name: BuildArtifactAsZip
           - !Ref AWS::NoValue
+
+  ApprovalNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: Ansoumane_Camara@cable.comcast.com
+          Protocol: email
 
   PipelineArtifactsBucket:
     Type: AWS::S3::Bucket
