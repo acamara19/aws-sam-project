@@ -116,6 +116,7 @@ Resources:
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
+      pipelineType: V2
       ArtifactStore:
         Location: !Ref PipelineArtifactsBucket
         Type: S3
@@ -667,7 +668,7 @@ Resources:
   #     ServiceRole: !GetAtt CodeBuildServiceRole.Arn
   #     Source:
   #       Type: CODEPIPELINE
-  #       BuildSpec: pipeline/buildspec_integration_test.yml
+  #       BuildSpec: cicd/infra_pipeline/pipeline/buildspec_integration_test.yml
 
   CodeBuildProjectDeploy:
     Condition: IsMainBranchPipeline
