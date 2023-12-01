@@ -116,7 +116,6 @@ Resources:
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      pipelineType: V2
       ArtifactStore:
         Location: !Ref PipelineArtifactsBucket
         Type: S3
@@ -135,6 +134,11 @@ Resources:
                 ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
                 FullRepositoryId: !Ref FullRepositoryId
                 BranchName: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
+                Triggers:
+                  - BranchName: !Ref FeatureGitBranchPattern # Trigger pipeline for tags matching FeatureGitBranchPattern
+                    Name: FeatureBranchTrigger
+                  - BranchName: !Ref MainGitBranch # Trigger pipeline for tags matching MainGitBranch
+                    Name: MainBranchTrigger
               OutputArtifacts:
                 - Name: SourceCodeAsZip
               RunOrder: 1
