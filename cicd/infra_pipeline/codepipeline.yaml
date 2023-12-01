@@ -27,10 +27,6 @@ Description: >
 
 
 Parameters:
-  FeatureGitBranchPattern:
-    Type: String
-    Description: The pattern of Git tags that will trigger the pipeline for feature branches.
-    Default: release-*
   GitProviderType:
     Type: String
     Default: "GitHub"
@@ -139,7 +135,7 @@ Resources:
                 FullRepositoryId: !Ref FullRepositoryId
                 BranchName: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
                 Triggers:
-                  - BranchName: !Ref FeatureGitBranchPattern # Trigger pipeline for tags matching FeatureGitBranchPattern
+                  - BranchName: !Ref FeatureGitBranch # Trigger pipeline for tags matching FeatureGitBranchPattern
                     Name: FeatureBranchTrigger
                   - BranchName: !Ref MainGitBranch # Trigger pipeline for tags matching MainGitBranch
                     Name: MainBranchTrigger
