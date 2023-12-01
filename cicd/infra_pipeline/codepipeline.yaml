@@ -425,6 +425,15 @@ Resources:
                 Resource:
                   Fn::Sub: ${PipelineArtifactsBucket.Arn}/*
 
+        - PolicyName: GrantSNSFullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'sns:*'
+                Resource: '*'
+
         - PolicyName: CodePipelineCodeBuildAndCloudformationAccess
           PolicyDocument:
             Version: "2012-10-17"
@@ -543,6 +552,14 @@ Resources:
                   - "s3:PutObject"
                 Resource:
                   - !Sub "arn:${AWS::Partition}:s3:::${PipelineArtifactsBucket}/*"
+        - PolicyName: GrantSNSFullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'sns:*'
+                Resource: '*'
         - PolicyName: AssumeStagePipExecutionRoles
           PolicyDocument:
             Version: "2012-10-17"
