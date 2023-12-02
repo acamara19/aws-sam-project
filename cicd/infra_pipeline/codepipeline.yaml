@@ -116,6 +116,7 @@ Resources:
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
+      Name: !Ref AWS::StackName
       ArtifactStore:
         Location: !Ref PipelineArtifactsBucket
         Type: S3
@@ -134,11 +135,10 @@ Resources:
                 ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
                 FullRepositoryId: !Ref FullRepositoryId
                 BranchName: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
-                Triggers:
-                  - BranchName: !Ref FeatureGitBranch # Trigger pipeline for tags matching FeatureGitBranchPattern
-                    Name: FeatureBranchTrigger
-                  - BranchName: !Ref MainGitBranch # Trigger pipeline for tags matching MainGitBranch
-                    Name: MainBranchTrigger
+                TagFilter: !If
+                  - IsMainBranchPipeline 
+                  - !Ref MainGitBranch 
+                  - !Ref FeatureGitBranch
               OutputArtifacts:
                 - Name: SourceCodeAsZip
               RunOrder: 1
@@ -208,6 +208,7 @@ Resources:
                   ProjectName: !Ref CodeBuildProjectBuildAndDeployFeature
                 InputArtifacts:
                   - Name: SourceCodeAsZip
+                RunOrder: 1
           - !Ref AWS::NoValue
 
         - !If
@@ -227,6 +228,7 @@ Resources:
                 OutputArtifacts:
                   - Name: BuildArtifactAsZip
           - !Ref AWS::NoValue
+
 
         - !If
           - IsMainBranchPipeline
@@ -459,10 +461,10 @@ Resources:
                     - !GetAtt CodeBuildProjectBuildAndPackage.Arn
                     - !Ref AWS::NoValue
                   # Uncomment the following step for running the integration tests
-                  - !If
-                    - IsMainBranchPipeline
-                    - !GetAtt CodeBuildProjectIntegrationTest.Arn
-                    - !Ref AWS::NoValue
+                  # - !If
+                  #   - IsMainBranchPipeline
+                  #   - !GetAtt CodeBuildProjectIntegrationTest.Arn
+                  #   - !Ref AWS::NoValue
                   - !If
                     - IsMainBranchPipeline
                     - !GetAtt CodeBuildProjectDeploy.Arn
