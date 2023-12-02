@@ -135,10 +135,6 @@ Resources:
                 ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
                 FullRepositoryId: !Ref FullRepositoryId
                 BranchName: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
-                TagFilter: !If
-                  - IsMainBranchPipeline 
-                  - !Ref MainGitBranch 
-                  - !Ref FeatureGitBranch
               OutputArtifacts:
                 - Name: SourceCodeAsZip
               RunOrder: 1
@@ -208,7 +204,6 @@ Resources:
                   ProjectName: !Ref CodeBuildProjectBuildAndDeployFeature
                 InputArtifacts:
                   - Name: SourceCodeAsZip
-                RunOrder: 1
           - !Ref AWS::NoValue
 
         - !If
@@ -228,7 +223,6 @@ Resources:
                 OutputArtifacts:
                   - Name: BuildArtifactAsZip
           - !Ref AWS::NoValue
-
 
         - !If
           - IsMainBranchPipeline
