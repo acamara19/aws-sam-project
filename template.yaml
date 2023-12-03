@@ -23,7 +23,7 @@ Resources:
       Runtime: python3.9
       AutoPublishAlias: live
       DeploymentPreference:
-        Type: !If [IsProduction, "Canary10Percent5Minutes", "AllAtOnce"]
+        Type: !If [IsProduction, "Linear10PercentEvery1Minute", "AllAtOnce"]
         Alarms: !If [IsProduction, [!Ref CanaryErrorsAlarm], []]
       Architectures:
       - x86_64
