@@ -313,6 +313,28 @@ Resources:
                   #   - "release-v2"
       PipelineType: V2
 
+  # 'GithubWebhook' satisfies two requirements:
+  # -- Means that updates are pushed from GitHub, rather than AWS having to poll
+  # -- Means we can filter for required changes
+  # Webhook resource for triggering pipeline based on specific tag patterns
+  PipelineWebhook:
+    Type: "AWS::CodePipeline::Webhook"
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: "76399cbb358001825442ea0602e00aa55b69a65514755329053989093fa35352"
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: "refs/tags/release*"
+        - JsonPath: "$.ref"
+          MatchEquals: "refs/tags/v*"
+        - JsonPath: "$.ref"
+          MatchEquals: "refs/tags/[0-9]+.[0-9]+.[0-9]+"
+      TargetAction: SourceCodeRepo
+      TargetPipeline: !Ref Pipeline
+      TargetPipelineVersion: !GetAtt Pipeline.Version
+      Name: !Sub ${AWS::StackName}-Webhook
+
   ApprovalNotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
@@ -702,3 +724,7 @@ Outputs:
     Condition: CreateConnection
     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
     Value: !Ref CodeStarConnection
+
+  WebhookURL:
+    Description: "The URL of the webhook created for the pipeline"
+    Value: !GetAtt PipelineWebhook.Url
