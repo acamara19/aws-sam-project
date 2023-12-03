@@ -316,7 +316,7 @@ Resources:
   ApprovalNotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
-      Name: !Ref AWS::StackName
+      DisplayName: !Ref AWS::StackName
       Subscription:
         - Endpoint: Ansoumane_Camara@cable.comcast.com
           Protocol: email
@@ -324,7 +324,7 @@ Resources:
   PipelineArtifactsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: PipelineArtifactsBucket
+      BucketName: pipelineartifactsbucket
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
@@ -364,7 +364,7 @@ Resources:
   PipelineArtifactsLoggingBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: PipelineArtifactsLoggingBucket
+      BucketName: pipelineartifactsloggingbucket
       AccessControl: "LogDeliveryWrite"
       OwnershipControls:
         Rules:
