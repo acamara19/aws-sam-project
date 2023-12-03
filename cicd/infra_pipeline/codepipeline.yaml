@@ -113,6 +113,7 @@ Resources:
   # |  __/| | |_) |  __| | | | | |  __/
   # |_|   |_| .__/ \___|_|_|_| |_|\___|
   #         |_|
+  # Added a new comment to trigger the pipeline
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -135,7 +136,7 @@ Resources:
                 ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
                 FullRepositoryId: !Ref FullRepositoryId
                 BranchName: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
-                PollForSourceChanges: false
+                DetectChanges: false
               OutputArtifacts:
                 - Name: SourceCodeAsZip
               RunOrder: 1
