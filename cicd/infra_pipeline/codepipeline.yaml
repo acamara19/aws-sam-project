@@ -113,7 +113,6 @@ Resources:
   # |  __/| | |_) |  __| | | | | |  __/
   # |_|   |_| .__/ \___|_|_|_| |_|\___|
   #         |_|
-  # Added a new comment to trigger the pipeline
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
