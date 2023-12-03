@@ -303,6 +303,7 @@ Resources:
 
   # 'GithubWebhook' satisfies two requirements:
   # -- Means that updates are pushed from GitHub, rather than AWS having to poll
+  # -- Means we can filter for required changes
   # Webhook resource for triggering pipeline based on specific tag patterns
   PipelineWebhook:
     Type: "AWS::CodePipeline::Webhook"
