@@ -712,3 +712,7 @@ Outputs:
     Condition: CreateConnection
     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
     Value: !Ref CodeStarConnection
+
+  WebhookURL:
+    Description: "The URL of the webhook created for the pipeline"
+    Value: !GetAtt PipelineWebhook.Url
