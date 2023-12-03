@@ -324,7 +324,7 @@ Resources:
   PipelineArtifactsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: pipelineartifactsbucket
+      BucketName: pipelineartifactsbucket-dev
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
@@ -364,7 +364,7 @@ Resources:
   PipelineArtifactsLoggingBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: pipelineartifactsloggingbucket
+      BucketName: pipelineartifactsloggingbucket-dev
       AccessControl: "LogDeliveryWrite"
       OwnershipControls:
         Rules:
