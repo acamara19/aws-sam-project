@@ -629,7 +629,7 @@ Resources:
         Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
-        Type: CODEPIPELINE
+        Type: GITHUB
         BuildSpec: cicd/infra_pipeline/pipeline/buildspec_unit_test.yml
 
   CodeBuildProjectBuildAndDeployFeature:
@@ -660,7 +660,7 @@ Resources:
             Value: !Ref FeatureGitBranch
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
-        Type: CODEPIPELINE
+        Type: GITHUB
         BuildSpec: cicd/infra_pipeline/pipeline/buildspec_feature.yml
 
   CodeBuildProjectBuildAndPackage:
@@ -695,7 +695,7 @@ Resources:
             Value: !Ref ProdImageRepository
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
-        Type: CODEPIPELINE
+        Type: GITHUB
         BuildSpec: "cicd/infra_pipeline/pipeline/buildspec_build_package.yml"
 
   # Uncomment and modify the following step for running the integration tests
@@ -711,7 +711,7 @@ Resources:
         Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
-        Type: CODEPIPELINE
+        Type: GITHUB
         BuildSpec: cicd/infra_pipeline/pipeline/buildspec_integration_test.yml
 
   CodeBuildProjectDeploy:
