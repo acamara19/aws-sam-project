@@ -251,17 +251,17 @@ Resources:
                   - Name: BuildArtifactAsZip
                 RunOrder: 1
               # Uncomment the following step for running the integration tests
-              # - Name: IntegrationTest
-              #   ActionTypeId:
-              #     Category: Build
-              #     Owner: AWS
-              #     Provider: CodeBuild
-              #     Version: "1"
-              #   Configuration:
-              #     ProjectName: !Ref CodeBuildProjectIntegrationTest
-              #   InputArtifacts:
-              #     - Name: SourceCodeAsZip
-              #   RunOrder: 2
+              - Name: IntegrationTest
+                ActionTypeId:
+                  Category: Build
+                  Owner: AWS
+                  Provider: CodeBuild
+                  Version: "1"
+                Configuration:
+                  ProjectName: !Ref CodeBuildProjectIntegrationTest
+                InputArtifacts:
+                  - Name: SourceCodeAsZip
+                RunOrder: 2
           - !Ref AWS::NoValue
 
         - !If
@@ -312,6 +312,24 @@ Resources:
                   # Excludes: [Uncomment if there are specific tags to exclude]
                   #   - "release-v2"
       PipelineType: V2
+
+  # 'GithubWebhook' satisfies two requirements:
+  # -- Means that updates are pushed from GitHub, rather than AWS having to poll
+  # -- Means we can filter for required changes
+  # Webhook resource for triggering pipeline based on specific tag patterns
+  PipelineWebhook:
+    Type: "AWS::CodePipeline::Webhook"
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: "76399cbb358001825442ea0602e00aa55b69a65514755329053989093fa35352"
+      Filters:
+        - JsonPath: "$.ref"
+          MatchEquals: "refs/tags/release-*"
+      TargetAction: SourceCodeRepo
+      TargetPipeline: !Ref Pipeline
+      TargetPipelineVersion: !GetAtt Pipeline.Version
+      Name: !Sub ${AWS::StackName}-Webhook
 
   ApprovalNotificationTopic:
     Type: AWS::SNS::Topic
@@ -471,10 +489,10 @@ Resources:
                     - !GetAtt CodeBuildProjectBuildAndPackage.Arn
                     - !Ref AWS::NoValue
                   # Uncomment the following step for running the integration tests
-                  # - !If
-                  #   - IsMainBranchPipeline
-                  #   - !GetAtt CodeBuildProjectIntegrationTest.Arn
-                  #   - !Ref AWS::NoValue
+                  - !If
+                    - IsMainBranchPipeline
+                    - !GetAtt CodeBuildProjectIntegrationTest.Arn
+                    - !Ref AWS::NoValue
                   - !If
                     - IsMainBranchPipeline
                     - !GetAtt CodeBuildProjectDeploy.Arn
@@ -671,20 +689,20 @@ Resources:
         BuildSpec: "cicd/infra_pipeline/pipeline/buildspec_build_package.yml"
 
   # Uncomment and modify the following step for running the integration tests
-  # CodeBuildProjectIntegrationTest:
-  #   Condition: IsMainBranchPipeline
-  #   Type: AWS::CodeBuild::Project
-  #   Properties:
-  #     Artifacts:
-  #       Type: CODEPIPELINE
-  #     Environment:
-  #       Type: LINUX_CONTAINER
-  #       ComputeType: BUILD_GENERAL1_SMALL
-  #       Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
-  #     ServiceRole: !GetAtt CodeBuildServiceRole.Arn
-  #     Source:
-  #       Type: CODEPIPELINE
-  #       BuildSpec: cicd/infra_pipeline/pipeline/buildspec_integration_test.yml
+  CodeBuildProjectIntegrationTest:
+    Condition: IsMainBranchPipeline
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: cicd/infra_pipeline/pipeline/buildspec_integration_test.yml
 
   CodeBuildProjectDeploy:
     Condition: IsMainBranchPipeline
@@ -705,3 +723,7 @@ Outputs:
     Condition: CreateConnection
     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
     Value: !Ref CodeStarConnection
+
+  WebhookURL:
+    Description: "The URL of the webhook created for the pipeline"
+    Value: !GetAtt PipelineWebhook.Url
