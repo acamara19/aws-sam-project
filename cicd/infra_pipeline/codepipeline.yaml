@@ -92,7 +92,7 @@ Parameters:
 Conditions:
   IsMainBranchPipeline: !Equals [!Ref FeatureGitBranch, ""]
   IsFeatureBranchPipeline: !Not [Condition: IsMainBranchPipeline]
-  CreateConnection: !Equals [!Ref CodeStarConnectionArn, ""]
+  # CreateConnection: !Equals [!Ref CodeStarConnectionArn, ""]
 
 Resources:
   #   ____
@@ -100,12 +100,12 @@ Resources:
   # \___ \ / _ \| | | | '__/ __/ _ \
   #   ___) | (_) | |_| | | | (_|  __/
   # |____/ \___/ \__,_|_|  \___\___|
-  CodeStarConnection:
-    Condition: CreateConnection
-    Type: AWS::CodeStarConnections::Connection
-    Properties:
-      ConnectionName: ServerlessRepositoryConnection
-      ProviderType: !Ref GitProviderType
+  # CodeStarConnection:
+  #   Condition: CreateConnection
+  #   Type: AWS::CodeStarConnections::Connection
+  #   Properties:
+  #     ConnectionName: ServerlessRepositoryConnection
+  #     ProviderType: !Ref GitProviderType
 
   #  ____  _            _ _
   # |  _ \(_)_ __   ___| (_)_ __   ___
@@ -133,7 +133,7 @@ Resources:
                 Version: "1"
               Configuration:
                 # ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
-                FullRepositoryId: !Ref FullRepositoryId
+                Repo: !Ref FullRepositoryId
                 BranchName: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
                 # DetectChanges: false
               OutputArtifacts:
@@ -157,8 +157,7 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 ParameterOverrides: !Sub |
                   {
-                    "FeatureGitBranch": "${FeatureGitBranch}",
-                    "CodeStarConnectionArn": "${CodeStarConnectionArn}"
+                    "FeatureGitBranch": "${FeatureGitBranch}"
                   }
               InputArtifacts:
                 - Name: SourceCodeAsZip
@@ -720,10 +719,10 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: cicd/infra_pipeline/pipeline/buildspec_deploy.yml
 Outputs:
-  CodeStarConnectionArn:
-    Condition: CreateConnection
-    Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
-    Value: !Ref CodeStarConnection
+#   CodeStarConnectionArn:
+#     Condition: CreateConnection
+#     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
+#     Value: !Ref CodeStarConnection
 
   WebhookURL:
     Description: "The URL of the webhook created for the pipeline"
