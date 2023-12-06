@@ -34,6 +34,10 @@ Parameters:
     Type: String
     Default: "github_oauth_pipeline_token"
     Description: Secret Id of GitHub token stored in Secrets Manager
+  WebhookSecretTokenId:
+    Type: String
+    Default: "WebhookSecretToken"
+    Description: Secret Id of webhook secret token stored in Secrets Manager
   FullRepositoryId:
     Type: String
     Default: ""
@@ -328,7 +332,7 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: "76399cbb358001825442ea0602e00aa55b69a65514755329053989093fa35352"
+        SecretToken: !Sub "{{resolve:secretsmanager:${WebhookSecretTokenId}:SecretString:webhook_secret_token}}"
       Filters:
         - JsonPath: "$.ref"
           MatchEquals: "refs/tags/release-*"
