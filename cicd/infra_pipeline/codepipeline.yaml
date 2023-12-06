@@ -32,7 +32,7 @@ Parameters:
     Default: "GitHub"
   FullRepositoryId:
     Type: String
-    Default: "acamara19/aws-sam-project"
+    Default: "aws-sam-project"
   MainGitBranch:
     Type: String
     Default: "main"
@@ -132,9 +132,11 @@ Resources:
                 Provider: GitHub
                 Version: "1"
               Configuration:
+                OAuthToken: "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"
+                Owner: acamara19
                 # ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
                 Repo: !Ref FullRepositoryId
-                BranchName: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
+                Branch: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
                 # DetectChanges: false
               OutputArtifacts:
                 - Name: SourceCodeAsZip
@@ -301,16 +303,16 @@ Resources:
                   - Name: BuildArtifactAsZip
           - !Ref AWS::NoValue
       # Add triggers at the pipeline level
-      Triggers:
-        - ProviderType: CodeStarSourceConnection
-          GitConfiguration:
-            SourceActionName: "SourceCodeRepo"  # This should match the name of your Source action
-            Push:
-              - Tags:
-                  Includes:
-                    - "release-*"  # Example: Trigger on tags like release-1.0, release-1.1, etc.
-                  # Excludes: [Uncomment if there are specific tags to exclude]
-                  #   - "release-v2"
+      # Triggers:
+      #   - ProviderType: CodeStarSourceConnection
+      #     GitConfiguration:
+      #       SourceActionName: "SourceCodeRepo"  # This should match the name of your Source action
+      #       Push:
+      #         - Tags:
+      #             Includes:
+      #               - "release-*"  # Example: Trigger on tags like release-1.0, release-1.1, etc.
+      #             # Excludes: [Uncomment if there are specific tags to exclude]
+      #             #   - "release-v2"
       PipelineType: V2
 
   # 'GithubWebhook' satisfies two requirements:
@@ -432,14 +434,14 @@ Resources:
                 Action:
                   - "iam:PassRole"
                 Resource: "*"
-        - PolicyName: CodeStarConnectionAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "codestar-connections:UseConnection"
-                Resource: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
+        # - PolicyName: CodeStarConnectionAccess
+        #   PolicyDocument:
+        #     Version: "2012-10-17"
+        #     Statement:
+        #       - Effect: Allow
+        #         Action:
+        #           - "codestar-connections:UseConnection"
+        #         Resource: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
         - PolicyName: CodePipelineCodeAndS3Bucket
           PolicyDocument:
             Version: "2012-10-17"
