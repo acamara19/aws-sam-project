@@ -30,17 +30,9 @@ Parameters:
   GitProviderType:
     Type: String
     Default: "GitHub"
-  GithubTokenSecretId:
-    Type: String
-    Default: "github_oauth_pipeline_token"
-    Description: Secret Id of GitHub token stored in Secrets Manager
-  WebhookSecretTokenId:
-    Type: String
-    Default: "WebhookSecretToken"
-    Description: Secret Id of webhook secret token stored in Secrets Manager
   FullRepositoryId:
     Type: String
-    Default: ""
+    Default: "acamara19/aws-sam-project"
   MainGitBranch:
     Type: String
     Default: "main"
@@ -100,7 +92,7 @@ Parameters:
 Conditions:
   IsMainBranchPipeline: !Equals [!Ref FeatureGitBranch, ""]
   IsFeatureBranchPipeline: !Not [Condition: IsMainBranchPipeline]
-  # CreateConnection: !Equals [!Ref CodeStarConnectionArn, ""]
+  CreateConnection: !Equals [!Ref CodeStarConnectionArn, ""]
 
 Resources:
   #   ____
@@ -108,12 +100,12 @@ Resources:
   # \___ \ / _ \| | | | '__/ __/ _ \
   #   ___) | (_) | |_| | | | (_|  __/
   # |____/ \___/ \__,_|_|  \___\___|
-  # CodeStarConnection:
-  #   Condition: CreateConnection
-  #   Type: AWS::CodeStarConnections::Connection
-  #   Properties:
-  #     ConnectionName: ServerlessRepositoryConnection
-  #     ProviderType: !Ref GitProviderType
+  CodeStarConnection:
+    Condition: CreateConnection
+    Type: AWS::CodeStarConnections::Connection
+    Properties:
+      ConnectionName: ServerlessRepositoryConnection
+      ProviderType: !Ref GitProviderType
 
   #  ____  _            _ _
   # |  _ \(_)_ __   ___| (_)_ __   ___
@@ -136,16 +128,13 @@ Resources:
             - Name: SourceCodeRepo
               ActionTypeId:
                 Category: Source
-                Owner: ThirdParty
-                Provider: GitHub
+                Owner: AWS
+                Provider: CodeStarSourceConnection
                 Version: "1"
               Configuration:
-                OAuthToken: !Sub "{{resolve:secretsmanager:${GithubTokenSecretId}:SecretString:github_oauth_token}}"
-                Owner: acamara19
-                # ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
-                Repo: aws-sam-project
-                Branch: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
-                # DetectChanges: false
+                ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
+                FullRepositoryId: !Ref FullRepositoryId
+                BranchName: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
               OutputArtifacts:
                 - Name: SourceCodeAsZip
               RunOrder: 1
@@ -167,7 +156,8 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 ParameterOverrides: !Sub |
                   {
-                    "FeatureGitBranch": "${FeatureGitBranch}"
+                    "FeatureGitBranch": "${FeatureGitBranch}",
+                    "CodeStarConnectionArn": "${CodeStarConnectionArn}"
                   }
               InputArtifacts:
                 - Name: SourceCodeAsZip
@@ -261,17 +251,17 @@ Resources:
                   - Name: BuildArtifactAsZip
                 RunOrder: 1
               # Uncomment the following step for running the integration tests
-              - Name: IntegrationTest
-                ActionTypeId:
-                  Category: Build
-                  Owner: AWS
-                  Provider: CodeBuild
-                  Version: "1"
-                Configuration:
-                  ProjectName: !Ref CodeBuildProjectIntegrationTest
-                InputArtifacts:
-                  - Name: SourceCodeAsZip
-                RunOrder: 2
+              # - Name: IntegrationTest
+              #   ActionTypeId:
+              #     Category: Build
+              #     Owner: AWS
+              #     Provider: CodeBuild
+              #     Version: "1"
+              #   Configuration:
+              #     ProjectName: !Ref CodeBuildProjectIntegrationTest
+              #   InputArtifacts:
+              #     - Name: SourceCodeAsZip
+              #   RunOrder: 2
           - !Ref AWS::NoValue
 
         - !If
@@ -311,40 +301,21 @@ Resources:
                   - Name: BuildArtifactAsZip
           - !Ref AWS::NoValue
       # Add triggers at the pipeline level
-      # Triggers:
-      #   - ProviderType: CodeStarSourceConnection
-      #     GitConfiguration:
-      #       SourceActionName: "SourceCodeRepo"  # This should match the name of your Source action
-      #       Push:
-      #         - Tags:
-      #             Includes:
-      #               - "release-*"  # Example: Trigger on tags like release-1.0, release-1.1, etc.
-      #             # Excludes: [Uncomment if there are specific tags to exclude]
-      #             #   - "release-v2"
+      Triggers:
+        - ProviderType: CodeStarSourceConnection
+          GitConfiguration:
+            SourceActionName: "SourceCodeRepo"  # This should match the name of your Source action
+            Push:
+              - Tags:
+                  Includes:
+                    - "release-*"  # Example: Trigger on tags like release-1.0, release-1.1, etc.
+                  # Excludes: [Uncomment if there are specific tags to exclude]
+                  #   - "release-v2"
       PipelineType: V2
-
-  # 'GithubWebhook' satisfies two requirements:
-  # -- Means that updates are pushed from GitHub, rather than AWS having to poll
-  # -- Means we can filter for required changes
-  # Webhook resource for triggering pipeline based on specific tag patterns
-  PipelineWebhook:
-    Type: "AWS::CodePipeline::Webhook"
-    Properties:
-      Authentication: GITHUB_HMAC
-      AuthenticationConfiguration:
-        SecretToken: !Sub "{{resolve:secretsmanager:${WebhookSecretTokenId}:SecretString:webhook_secret_token}}"
-      Filters:
-        - JsonPath: "$.ref"
-          MatchEquals: "refs/tags/release-*"
-      TargetAction: SourceCodeRepo
-      TargetPipeline: !Ref Pipeline
-      TargetPipelineVersion: !GetAtt Pipeline.Version
-      Name: !Sub ${AWS::StackName}-Webhook
 
   ApprovalNotificationTopic:
     Type: AWS::SNS::Topic
     Properties:
-      DisplayName: !Ref AWS::StackName
       Subscription:
         - Endpoint: Ansoumane_Camara@cable.comcast.com
           Protocol: email
@@ -352,7 +323,6 @@ Resources:
   PipelineArtifactsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: pipelineartifactsbucket-dev
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
@@ -392,7 +362,6 @@ Resources:
   PipelineArtifactsLoggingBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: pipelineartifactsloggingbucket-dev
       AccessControl: "LogDeliveryWrite"
       OwnershipControls:
         Rules:
@@ -442,14 +411,14 @@ Resources:
                 Action:
                   - "iam:PassRole"
                 Resource: "*"
-        # - PolicyName: CodeStarConnectionAccess
-        #   PolicyDocument:
-        #     Version: "2012-10-17"
-        #     Statement:
-        #       - Effect: Allow
-        #         Action:
-        #           - "codestar-connections:UseConnection"
-        #         Resource: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
+        - PolicyName: CodeStarConnectionAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "codestar-connections:UseConnection"
+                Resource: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
         - PolicyName: CodePipelineCodeAndS3Bucket
           PolicyDocument:
             Version: "2012-10-17"
@@ -499,10 +468,10 @@ Resources:
                     - !GetAtt CodeBuildProjectBuildAndPackage.Arn
                     - !Ref AWS::NoValue
                   # Uncomment the following step for running the integration tests
-                  - !If
-                    - IsMainBranchPipeline
-                    - !GetAtt CodeBuildProjectIntegrationTest.Arn
-                    - !Ref AWS::NoValue
+                  # - !If
+                  #   - IsMainBranchPipeline
+                  #   - !GetAtt CodeBuildProjectIntegrationTest.Arn
+                  #   - !Ref AWS::NoValue
                   - !If
                     - IsMainBranchPipeline
                     - !GetAtt CodeBuildProjectDeploy.Arn
@@ -629,7 +598,7 @@ Resources:
         Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
-        Type: GITHUB
+        Type: CODEPIPELINE
         BuildSpec: cicd/infra_pipeline/pipeline/buildspec_unit_test.yml
 
   CodeBuildProjectBuildAndDeployFeature:
@@ -660,7 +629,7 @@ Resources:
             Value: !Ref FeatureGitBranch
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
-        Type: GITHUB
+        Type: CODEPIPELINE
         BuildSpec: cicd/infra_pipeline/pipeline/buildspec_feature.yml
 
   CodeBuildProjectBuildAndPackage:
@@ -695,24 +664,24 @@ Resources:
             Value: !Ref ProdImageRepository
       ServiceRole: !GetAtt CodeBuildServiceRole.Arn
       Source:
-        Type: GITHUB
+        Type: CODEPIPELINE
         BuildSpec: "cicd/infra_pipeline/pipeline/buildspec_build_package.yml"
 
   # Uncomment and modify the following step for running the integration tests
-  CodeBuildProjectIntegrationTest:
-    Condition: IsMainBranchPipeline
-    Type: AWS::CodeBuild::Project
-    Properties:
-      Artifacts:
-        Type: CODEPIPELINE
-      Environment:
-        Type: LINUX_CONTAINER
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
-      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
-      Source:
-        Type: GITHUB
-        BuildSpec: cicd/infra_pipeline/pipeline/buildspec_integration_test.yml
+  # CodeBuildProjectIntegrationTest:
+  #   Condition: IsMainBranchPipeline
+  #   Type: AWS::CodeBuild::Project
+  #   Properties:
+  #     Artifacts:
+  #       Type: CODEPIPELINE
+  #     Environment:
+  #       Type: LINUX_CONTAINER
+  #       ComputeType: BUILD_GENERAL1_SMALL
+  #       Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+  #     ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+  #     Source:
+  #       Type: CODEPIPELINE
+  #       BuildSpec: cicd/infra_pipeline/pipeline/buildspec_integration_test.yml
 
   CodeBuildProjectDeploy:
     Condition: IsMainBranchPipeline
@@ -729,11 +698,7 @@ Resources:
         Type: CODEPIPELINE
         BuildSpec: cicd/infra_pipeline/pipeline/buildspec_deploy.yml
 Outputs:
-#   CodeStarConnectionArn:
-#     Condition: CreateConnection
-#     Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
-#     Value: !Ref CodeStarConnection
-
-  WebhookURL:
-    Description: "The URL of the webhook created for the pipeline"
-    Value: !GetAtt PipelineWebhook.Url
+  CodeStarConnectionArn:
+    Condition: CreateConnection
+    Description: The Arn of AWS CodeStar Connection used to connect to external code repositories.
+    Value: !Ref CodeStarConnection
