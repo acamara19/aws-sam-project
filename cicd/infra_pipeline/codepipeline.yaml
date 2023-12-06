@@ -30,9 +30,13 @@ Parameters:
   GitProviderType:
     Type: String
     Default: "GitHub"
+  GithubTokenSecretId:
+    Type: String
+    Default: "github_oauth_pipeline_token"
+    Description: Secret Id of GitHub token stored in Secrets Manager
   FullRepositoryId:
     Type: String
-    Default: "aws-sam-project"
+    Default: ""
   MainGitBranch:
     Type: String
     Default: "main"
@@ -132,10 +136,10 @@ Resources:
                 Provider: GitHub
                 Version: "1"
               Configuration:
-                OAuthToken: "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"
+                OAuthToken: !Sub "{{resolve:secretsmanager:${GithubTokenSecretId}:SecretString:github_oauth_token}}"
                 Owner: acamara19
                 # ConnectionArn: !If [CreateConnection, !Ref CodeStarConnection, !Ref CodeStarConnectionArn]
-                Repo: !Ref FullRepositoryId
+                Repo: aws-sam-project
                 Branch: !If [IsFeatureBranchPipeline, !Ref FeatureGitBranch, !Ref MainGitBranch]
                 # DetectChanges: false
               OutputArtifacts:
